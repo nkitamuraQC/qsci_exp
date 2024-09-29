@@ -134,7 +134,6 @@ class QSCI:
         occ_b = []
         for i in range(len(states)):
             occ_i = state2occ(states[i], norb)
-            # print(occ_i)
             if len(occ_i) != self.nelec:
                 continue
             _, occ_alpha, occ_beta = qubit2rhf(occ_i, norb, nelec)
@@ -142,12 +141,8 @@ class QSCI:
                 continue
             if len(occ_beta) != self.nelec // 2:
                 continue
-            print("occ_alpha =", occ_alpha)
-            print("occ_beta =", occ_beta)
             occ_a.append(occ_alpha.tolist())
             occ_b.append(occ_beta.tolist())
-        # print(occ_a)
-        # print(occ_b)
         strs_a = cistring._occslst2strs(list(occ_a))
         strs_b = cistring._occslst2strs(list(occ_b))
         ci_strs = (list(set(strs_a)), list(set(strs_b)))
