@@ -2,7 +2,7 @@
 QSCI is a Python package for quantum computing related to quantum chemical calculations.
 
 ## Features
-- Selected CI for quantum computation
+- Selected CI for quantum computing
 
 ## Usages
 
