@@ -41,5 +41,6 @@ pip install -e .
 
 ## TODO
 - 動作確認
+  - test
 - コード最適化
 - formatting
