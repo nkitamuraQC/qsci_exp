@@ -41,7 +41,6 @@ class UCCSD_Lattice:
         # Define the initial values of the circuit parameters
         self.params = np.random.rand(len(singles) + len(doubles))
 
-
     def optimize(self):
         @qml.qnode(self.dev)
         def circuit(params, wires, s_wires, d_wires, hf_state):

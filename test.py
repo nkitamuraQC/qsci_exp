@@ -4,6 +4,7 @@ from pyscf import gto
 from pyscf.fci import direct_spin1
 import numpy as np
 
+
 def test_energy():
     norb = 2
     nelec = 2
@@ -17,5 +18,5 @@ def test_energy():
     e1, c1, _ = qscicls.diagonalize()
     cis = direct_spin1.FCISolver()
     e2, c2 = cis.kernel(int1e, int2e, norb, nelec)
-    assert(abs(e1 - e2) < 1e-6)
+    assert abs(e1 - e2) < 1e-6
     return
