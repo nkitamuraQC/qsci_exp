@@ -15,6 +15,7 @@ def test_energy():
     uccsd.optimize()
     smp = qsci.Sampler(uccsd)
     qscicls = qsci.QSCI(smp)
+    qscicls.nchoose=4
     e1, c1, _ = qscicls.diagonalize()
     cis = direct_spin1.FCISolver()
     e2, c2 = cis.kernel(int1e, int2e, norb, nelec)
