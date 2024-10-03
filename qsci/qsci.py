@@ -1,6 +1,6 @@
 import pennylane as qml
 import numpy as np
-from sampling import UCCSD_Lattice
+from qsci.vqe import UCCSD_Lattice
 import copy, math
 from pyscf.fci import cistring, direct_spin1
 from pyscf import fci
@@ -8,6 +8,15 @@ from pyscf.fci.selected_ci import kernel_fixed_space
 
 
 def list2int(val):
+    """
+    Calculates a decimal number from a binary number given by python list.
+
+    Args:
+        val (list[int]): a binary number given by python list
+            
+    Returns:
+        int: a decimal number
+    """
     ret = 0
     for i, v in enumerate(val):
         ret += (2**i) * v
@@ -15,6 +24,15 @@ def list2int(val):
 
 
 def state2occ(state, norb):
+    """
+    Calculates occupation number vector from qubit state vector.
+
+    Args:
+        state (list[int]): a state
+            
+    Returns:
+        list[int]: an occupation number vector
+    """
     index = np.argmax(state)
     occ_str = bin(index)[2:].zfill(norb * 2)[::-1]
     occ = []
@@ -25,6 +43,17 @@ def state2occ(state, norb):
 
 
 def qubit2rhf(occ, norb, nelec):
+    """
+    Calculates a RHF CI vector.
+
+    Args:
+        occ (list[int]): an occupation number vector
+        norb (int): number of orbitals
+        nelec (int): number of electrons
+            
+    Returns:
+        tuple[np.ndarray, np.ndarray, np.ndarray]: RHF CI vector, occupation number for alpha electrons and beta electrons
+    """
     # _occslst2strs(occslst)の使い方を調べる
     occ_alpha = np.array([occ[o] // 2 for o in range(len(occ)) if occ[o] % 2 == 0])
     occ_beta = np.array([occ[o] // 2 for o in range(len(occ)) if occ[o] % 2 == 1])
@@ -47,14 +76,33 @@ def qubit2rhf(occ, norb, nelec):
 
 class Sampler:
     def __init__(self, model):
-        ## ADAPT
+        """
+        Sampler class
+        
+        Args:
+            model (vqe.UCCSD): UCCSD class
+        """
         self.model = model
 
     def sampling(self):
+        """
+        Sample from the supplied observable, with the number of shots determined 
+        from the dev.shots attribute of the corresponding device, returning raw samples. 
+        If no observable is provided then basis state samples are returned directly from the device.
+
+        Returns:
+            qml.measurements.SampleMP: results of sampling
+        """
         sample = self.model.sample()
         return sample
 
     def calc_freq(self, sample):
+        """
+        Get frequencies
+        
+        Args:
+            np.ndarray: frequencies
+        """
         norb = self.model.int1e.shape[0]
         freq = np.zeros((2 ** (norb * 2)))
         for i in range(sample.shape[0]):
@@ -65,6 +113,16 @@ class Sampler:
 
 class QSCI:
     def __init__(self, sampler, int1e=None, int2e=None, norb=None, nelec=None):
+        """
+        QSCI class
+        
+        Args:
+            sampler (qsci.qsci.sampler): the sampler class
+            int1e (np.ndarray): one-electron integrals
+            int2e (np.ndarray): two-electron integrals
+            norb (int): number of orbitals
+            nelec (int): number of electrons
+        """
         self.int1e = sampler.model.int1e
         self.int2e = sampler.model.int2e
         self.norb = sampler.model.norb
@@ -75,18 +133,36 @@ class QSCI:
         self.dev = qml.device("default.qubit", wires=self.norb * 2)
 
     def choose(self):
+        """
+        Chooses important electronic configurations.
+                
+        Returns:
+            np.ndarray: important electronic configurations
+        """
         sample = self.sampler.sampling()
         freq = self.sampler.calc_freq(sample)
         freq_large = np.argsort(freq)[::-1][: self.nchoose]
         return freq_large
 
     def arr2qubit(self):
+        """
+        Builds a qubit Hamiltonian.
+                
+        Returns:
+            qml.qchem.observable: a qubit Hamiltonian
+        """
         self.h1e = qml.qchem.one_particle(self.int1e)
         self.h2e = qml.qchem.two_particle(self.int2e)
         h_ob = qml.qchem.observable([self.h1e, self.h2e], mapping="jordan_wigner")
         return h_ob
 
     def freqindex2qubit(self, freq_index):
+        """
+        Builds a qubit vector from important electronic configurations.
+                
+        Returns:
+            np.ndarray: a qubit vector
+        """
         ret = []
         for i in range(len(freq_index)):
             state = np.zeros((2 ** (self.norb * 2)))
@@ -96,7 +172,12 @@ class QSCI:
         return ret
 
     def diagonalize(self):
-        ## cre, desを使う
+        """
+        Diagonalize the Hamiltonian matrix by Full CI algorithm
+                
+        Returns:
+            tuple[float, np.ndarray, np.ndarray]: electronic energy, a CI vector, important electronic configurations
+        """
         freq_large = self.choose()
         states = self.freqindex2qubit(freq_large)
         norb = self.norb
@@ -125,7 +206,15 @@ class QSCI:
         return e[index], c[index], freq_large
 
     def diagonalize_sci(self, nroots=1):
-        ## cre, desを使う
+        """
+        Diagonalize the Hamiltonian matrix by selected CI algorithm
+
+        Args:
+            nroots (int): index of roots
+                
+        Returns:
+            tuple[float, np.ndarray]: electronic energy, a CI vector
+        """
         freq_large = self.choose()
         states = self.freqindex2qubit(freq_large)
         norb = self.norb
@@ -164,12 +253,28 @@ class QSCI:
         return e[nroots - 1], c[nroots - 1]
 
     def as_qubitstate(self, c, freq_large):
+        """
+        Get a qubit statevector from the selected CI wavefunction
+
+        Args:
+            c (np.ndarray): a CI vector
+            freq_large (np.ndarray): important electronic configurations
+                
+        Returns:
+            np.ndarray: a qubit statevector
+        """
         state = np.zeros((2 ** (self.norb * 2)))
         for i, f in enumerate(freq_large):
             state[f] = c[i]
         return state
 
     def make_rdm(self):
+        """
+        Get density matrices from the selected CI wavefunction
+                
+        Returns:
+            tuple[np.ndarray, np.ndarray]: one-particle density matrix, two-particle density matrix
+        """
         myci = fci.select_ci.SelectedCI()
         dm1, dm2 = myci.make_rdm12(self.c, self.norb, self.nelec)
         return dm1, dm2

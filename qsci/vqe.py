@@ -8,6 +8,15 @@ from pennylane.templates import QuantumPhaseEstimation
 
 class UCCSD_Lattice:
     def __init__(self, int1e, int2e, norb, nelec):
+        """
+        UCCSD class
+        
+        Args:
+            int1e (np.ndarray): one-electron integrals
+            int2e (np.ndarray): two-electron integrals
+            norb (int): number of orbitals
+            nelec (int): number of electrons
+        """
         self.int1e = int1e
         self.int2e = int2e
         self.norb = norb
@@ -42,6 +51,9 @@ class UCCSD_Lattice:
         self.params = np.random.rand(len(singles) + len(doubles))
 
     def optimize(self):
+        """
+        Optimize UCCSD parameters
+        """
         @qml.qnode(self.dev)
         def circuit(params, wires, s_wires, d_wires, hf_state):
             qml.UCCSD(params, wires, s_wires, d_wires, hf_state)
@@ -70,6 +82,14 @@ class UCCSD_Lattice:
         return
 
     def sample(self):
+        """
+        Sample from the supplied observable, with the number of shots determined 
+        from the dev.shots attribute of the corresponding device, returning raw samples. 
+        If no observable is provided then basis state samples are returned directly from the device.
+
+        Returns:
+            qml.measurements.SampleMP: results of sampling
+        """
         @qml.qnode(self.dev_shot)
         def circuit(params, wires, s_wires, d_wires, hf_state):
             qml.UCCSD(params, wires, s_wires, d_wires, hf_state)
