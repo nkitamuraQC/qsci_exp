@@ -8,7 +8,7 @@ QSCI is a Python package for quantum computing related to quantum chemical calcu
 ## Usages
 
 ```python
-from qsci import qsci, sampling
+from qsci import qsciclass, sampling
 norb = 2
 nelec = 2
 int1e = np.random.rand(norb, norb)
@@ -17,8 +17,8 @@ int2e = np.zeros((norb, norb, norb, norb))
 uccsd = sampling.UCCSD_Lattice(int1e, int2e, norb, nelec)
 uccsd.optimize()
 smp = qsci.Sampler(uccsd)
-qscicls = qsci.QSCI(smp)
-e, c, _ = qscicls.diagonalize()
+qscicls = qsciclass.QSCI(smp)
+e, c, _ = qscicls.diagonalize_sci()
 print(e)
 print(c)
 
