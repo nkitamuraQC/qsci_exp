@@ -1,9 +1,5 @@
 import pennylane as qml
 import numpy as np
-from torch.autograd import Variable
-import torch, copy
-from pyscf import mcscf
-from pennylane.templates import QuantumPhaseEstimation
 
 
 class UCCSD_Lattice:

@@ -1,0 +1,7 @@
+README.md
+setup.py
+QSCI.egg-info/PKG-INFO
+QSCI.egg-info/SOURCES.txt
+QSCI.egg-info/dependency_links.txt
+QSCI.egg-info/requires.txt
+QSCI.egg-info/top_level.txt

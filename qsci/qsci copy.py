@@ -2,8 +2,9 @@ import pennylane as qml
 import numpy as np
 from qsci.vqe import UCCSD_Lattice
 import copy, math
-from pyscf.fci import cistring
-from pyscf.fci.selected_ci import kernel_fixed_space, _as_SCIvector, SelectedCI
+from pyscf.fci import cistring, direct_spin1
+from pyscf import fci
+from pyscf.fci.selected_ci import kernel_fixed_space
 
 
 def list2int(val):
@@ -170,6 +171,39 @@ class QSCI:
         ret = np.array(ret)
         return ret
 
+    def diagonalize(self):
+        """
+        Diagonalize the Hamiltonian matrix by Full CI algorithm
+                
+        Returns:
+            tuple[float, np.ndarray, np.ndarray]: electronic energy, a CI vector, important electronic configurations
+        """
+        freq_large = self.choose()
+        states = self.freqindex2qubit(freq_large)
+        norb = self.norb
+        nelec = self.nelec
+        h2e = fci.direct_spin1.absorb_h1e(self.int1e, self.int2e, norb, nelec, 0.5)
+        ham_matrix = np.zeros((len(states), len(states)))
+
+        def hop(c, h2e, norb, nelec):
+            hc = fci.select_ci.contract_2e(h2e, c, norb, nelec, None)
+            return hc.ravel()
+
+        for i in range(len(states)):
+            occ_i = state2occ(states[i], norb)
+            c1, occ_alpha, occ_beta = qubit2rhf(occ_i, norb, nelec)
+            print("states[i] =", states[i])
+            print("occ_i =", occ_i)
+            print("occ_alpha, occ_beta =", occ_alpha, occ_beta)
+            c1 = hop(c1, h2e, norb, nelec)
+            for j in range(len(states)):
+                occ_j = state2occ(states[j], norb)
+                c2, _, _ = qubit2rhf(occ_j, norb, nelec)
+                elem = np.dot(c2.ravel().conj(), c1)
+                ham_matrix[i, j] = elem
+        e, c = np.linalg.eig(ham_matrix)
+        index = np.argmin(e)
+        return e[index], c[index], freq_large
 
     def diagonalize_sci(self, nroots=1):
         """
@@ -198,13 +232,13 @@ class QSCI:
                 continue
             occ_a.append(occ_alpha.tolist())
             occ_b.append(occ_beta.tolist())
-        strs_a = cistring._occslst2strs(np.asarray(occ_a, dtype=np.int32).view(cistring.OIndexList))
-        strs_b = cistring._occslst2strs(np.asarray(occ_b, dtype=np.int32).view(cistring.OIndexList))
+        strs_a = cistring._occslst2strs(list(occ_a))
+        strs_b = cistring._occslst2strs(list(occ_b))
         ci_strs = (list(set(strs_a)), list(set(strs_b)))
         occ_0 = state2occ(states[i], norb)
         ci0, _, _ = qubit2rhf(occ_0, norb, nelec)
-        c1 = _as_SCIvector(ci0, ci_strs)
-        myci = SelectedCI()
+        c1 = fci.select_ci._as_SCIvector(ci0, ci_strs)
+        myci = fci.select_ci.SelectedCI()
 
         e, c = kernel_fixed_space(
             myci, self.int1e, self.int2e, self.norb, self.nelec, c1._strs, nroots=nroots
@@ -218,6 +252,21 @@ class QSCI:
             return e, c
         return e[nroots - 1], c[nroots - 1]
 
+    def as_qubitstate(self, c, freq_large):
+        """
+        Get a qubit statevector from the selected CI wavefunction
+
+        Args:
+            c (np.ndarray): a CI vector
+            freq_large (np.ndarray): important electronic configurations
+                
+        Returns:
+            np.ndarray: a qubit statevector
+        """
+        state = np.zeros((2 ** (self.norb * 2)))
+        for i, f in enumerate(freq_large):
+            state[f] = c[i]
+        return state
 
     def make_rdm(self):
         """

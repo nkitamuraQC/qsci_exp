@@ -1,4 +1,2 @@
-numpy
-pennylane
 pyscf
-torch
+pennylane

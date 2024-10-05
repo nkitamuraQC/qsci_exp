@@ -1,6 +1,5 @@
 import pytest
 from qsci import qsci, vqe
-from pyscf import gto
 from pyscf.fci import direct_spin1
 import numpy as np
 
@@ -16,7 +15,7 @@ def test_energy():
     smp = qsci.Sampler(uccsd)
     qscicls = qsci.QSCI(smp)
     qscicls.nchoose=4
-    e1, c1, _ = qscicls.diagonalize()
+    e1, c1 = qscicls.diagonalize_sci()
     cis = direct_spin1.FCISolver()
     e2, c2 = cis.kernel(int1e, int2e, norb, nelec)
     assert abs(e1 - e2) < 1e-6

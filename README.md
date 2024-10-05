@@ -33,7 +33,7 @@ print(c)
 ## Installation
 
 ```shell
-conda create -n qsci python=3.10
+conda create -n qsci python=3.9
 conda activate qsci
 git clone https://github.com/nkitamuraQC/QSCI.git
 cd QSCI
