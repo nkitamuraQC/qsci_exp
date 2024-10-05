@@ -22,3 +22,5 @@ save/
 catboost_info/
 *npy
 /tmp/
+*egg*
+*_cache
