@@ -1,5 +1,5 @@
 import pytest
-from qsci import qsci, vqe
+from qsci import qsciclass, vqe
 from pyscf.fci import direct_spin1
 import numpy as np
 
@@ -12,8 +12,8 @@ def test_energy():
     int2e = np.zeros((norb, norb, norb, norb))
     uccsd = vqe.UCCSD_Lattice(int1e, int2e, norb, nelec)
     uccsd.optimize()
-    smp = qsci.Sampler(uccsd)
-    qscicls = qsci.QSCI(smp)
+    smp = qsciclass.Sampler(uccsd)
+    qscicls = qsciclass.QSCI(smp)
     qscicls.nchoose=4
     e1, c1 = qscicls.diagonalize_sci()
     cis = direct_spin1.FCISolver()
