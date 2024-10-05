@@ -39,9 +39,3 @@ git clone https://github.com/nkitamuraQC/QSCI.git
 cd QSCI
 pip install -e .
 ```
-
-## TODO
-- 動作確認
-  - test
-- コード最適化
-- formatting
