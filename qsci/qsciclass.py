@@ -1,7 +1,6 @@
 import pennylane as qml
 import numpy as np
 from qsci.vqe import UCCSD_Lattice
-import math
 from pyscf.fci import cistring
 from pyscf.fci.selected_ci import kernel_fixed_space, _as_SCIvector, SelectedCI
 
@@ -227,7 +226,7 @@ if __name__ == "__main__":
     uccsd.optimize()
     smp = Sampler(uccsd)
     qsci = QSCI(smp)
-    e, c, _ = qsci.diagonalize()
+    e, c = qsci.diagonalize_sci()
     print(e)
     print(c)
 
