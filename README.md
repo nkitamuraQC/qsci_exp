@@ -16,7 +16,7 @@ int1e = int1e + int1e.T
 int2e = np.zeros((norb, norb, norb, norb))
 uccsd = sampling.UCCSD_Lattice(int1e, int2e, norb, nelec)
 uccsd.optimize()
-smp = qsci.Sampler(uccsd)
+smp = qsciclass.Sampler(uccsd)
 qscicls = qsciclass.QSCI(smp)
 e, c, _ = qscicls.diagonalize_sci()
 print(e)
