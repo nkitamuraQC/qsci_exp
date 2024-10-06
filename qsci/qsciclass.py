@@ -1,7 +1,7 @@
 import pennylane as qml
 import numpy as np
 from qsci.vqe import UCCSD_Lattice
-import copy, math
+import math
 from pyscf.fci import cistring
 from pyscf.fci.selected_ci import kernel_fixed_space, _as_SCIvector, SelectedCI
 
@@ -201,8 +201,8 @@ class QSCI:
         strs_a = cistring._occslst2strs(np.asarray(occ_a, dtype=np.int32).view(cistring.OIndexList))
         strs_b = cistring._occslst2strs(np.asarray(occ_b, dtype=np.int32).view(cistring.OIndexList))
         ci_strs = (list(set(strs_a)), list(set(strs_b)))
-        occ_0 = state2occ(states[i], norb)
-        ci0, _, _ = qubit2rhf(occ_0, norb, nelec)
+        ci0 = np.zeros((len(ci_strs[0]), len(ci_strs[1])))
+        ci0[0, 0] = 1
         c1 = _as_SCIvector(ci0, ci_strs)
         myci = SelectedCI()
 
