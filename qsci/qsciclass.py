@@ -51,26 +51,12 @@ def qubit2rhf(occ, norb, nelec):
         nelec (int): number of electrons
             
     Returns:
-        tuple[np.ndarray, np.ndarray, np.ndarray]: RHF CI vector, occupation number for alpha electrons and beta electrons
+        tuple[np.ndarray, np.ndarray]: occupation number for alpha electrons and beta electrons
     """
     # _occslst2strs(occslst)の使い方を調べる
     occ_alpha = np.array([occ[o] // 2 for o in range(len(occ)) if occ[o] % 2 == 0])
     occ_beta = np.array([occ[o] // 2 for o in range(len(occ)) if occ[o] % 2 == 1])
-    ndet = math.comb(norb, nelec // 2)
-    c = np.zeros((ndet, ndet))
-    occlst = cistring.gen_occslst(range(norb), nelec // 2)
-    for i, occlst_ in enumerate(occlst):
-        occlst_arr = np.array(occlst_)
-        if np.linalg.norm(occ_alpha - occlst_arr[0]) < 1e-6:
-            break
-
-    for j, occlst_ in enumerate(occlst):
-        occlst_arr = np.array(occlst_)
-        if np.linalg.norm(occ_beta - occlst_arr[0]) < 1e-6:
-            break
-
-    c[i, j] = 1
-    return c, occ_alpha, occ_beta
+    return occ_alpha, occ_beta
 
 
 class Sampler:
@@ -191,7 +177,7 @@ class QSCI:
             occ_i = state2occ(states[i], norb)
             if len(occ_i) != self.nelec:
                 continue
-            _, occ_alpha, occ_beta = qubit2rhf(occ_i, norb, nelec)
+            occ_alpha, occ_beta = qubit2rhf(occ_i, norb, nelec)
             if len(occ_alpha) != self.nelec // 2:
                 continue
             if len(occ_beta) != self.nelec // 2:
