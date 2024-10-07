@@ -37,6 +37,6 @@ print(c)
 conda create -n qsci python=3.9
 conda activate qsci
 git clone https://github.com/nkitamuraQC/QSCI.git
-cd QSCI
+cd qsci_exp
 pip install -e .
 ```
