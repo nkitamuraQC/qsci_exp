@@ -34,9 +34,9 @@ print(c)
 ## Installation
 
 ```shell
-conda create -n qsci python=3.9
-conda activate qsci
-git clone https://github.com/nkitamuraQC/QSCI.git
+conda create -n qsci_exp python=3.9
+conda activate qsci_exp
+git clone https://github.com/nkitamuraQC/qsci_exp.git
 cd qsci_exp
 pip install -e .
 ```
