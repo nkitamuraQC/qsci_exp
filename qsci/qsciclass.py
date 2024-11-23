@@ -11,7 +11,7 @@ def list2int(val):
 
     Args:
         val (list[int]): a binary number given by python list
-            
+
     Returns:
         int: a decimal number
     """
@@ -27,7 +27,7 @@ def state2occ(state, norb):
 
     Args:
         state (list[int]): a state
-            
+
     Returns:
         list[int]: an occupation number vector
     """
@@ -48,7 +48,7 @@ def qubit2rhf(occ, norb, nelec):
         occ (list[int]): an occupation number vector
         norb (int): number of orbitals
         nelec (int): number of electrons
-            
+
     Returns:
         tuple[np.ndarray, np.ndarray]: occupation number for alpha electrons and beta electrons
     """
@@ -62,7 +62,7 @@ class Sampler:
     def __init__(self, model):
         """
         Sampler class
-        
+
         Args:
             model (vqe.UCCSD): UCCSD class
         """
@@ -70,8 +70,8 @@ class Sampler:
 
     def sampling(self):
         """
-        Sample from the supplied observable, with the number of shots determined 
-        from the dev.shots attribute of the corresponding device, returning raw samples. 
+        Sample from the supplied observable, with the number of shots determined
+        from the dev.shots attribute of the corresponding device, returning raw samples.
         If no observable is provided then basis state samples are returned directly from the device.
 
         Returns:
@@ -83,7 +83,7 @@ class Sampler:
     def calc_freq(self, sample):
         """
         Get frequencies
-        
+
         Args:
             np.ndarray: frequencies
         """
@@ -99,7 +99,7 @@ class QSCI:
     def __init__(self, sampler, int1e=None, int2e=None, norb=None, nelec=None):
         """
         QSCI class
-        
+
         Args:
             sampler (qsci.qsci.sampler): the sampler class
             int1e (np.ndarray): one-electron integrals
@@ -119,7 +119,7 @@ class QSCI:
     def choose(self):
         """
         Chooses important electronic configurations.
-                
+
         Returns:
             np.ndarray: important electronic configurations
         """
@@ -131,7 +131,7 @@ class QSCI:
     def arr2qubit(self):
         """
         Builds a qubit Hamiltonian.
-                
+
         Returns:
             qml.qchem.observable: a qubit Hamiltonian
         """
@@ -143,7 +143,7 @@ class QSCI:
     def freqindex2qubit(self, freq_index):
         """
         Builds a qubit vector from important electronic configurations.
-                
+
         Returns:
             np.ndarray: a qubit vector
         """
@@ -155,14 +155,13 @@ class QSCI:
         ret = np.array(ret)
         return ret
 
-
     def diagonalize_sci(self, nroots=1):
         """
         Diagonalize the Hamiltonian matrix by selected CI algorithm
 
         Args:
             nroots (int): index of roots
-                
+
         Returns:
             tuple[float, np.ndarray]: electronic energy, a CI vector
         """
@@ -183,8 +182,12 @@ class QSCI:
                 continue
             occ_a.append(occ_alpha.tolist())
             occ_b.append(occ_beta.tolist())
-        strs_a = cistring._occslst2strs(np.asarray(occ_a, dtype=np.int32).view(cistring.OIndexList))
-        strs_b = cistring._occslst2strs(np.asarray(occ_b, dtype=np.int32).view(cistring.OIndexList))
+        strs_a = cistring._occslst2strs(
+            np.asarray(occ_a, dtype=np.int32).view(cistring.OIndexList)
+        )
+        strs_b = cistring._occslst2strs(
+            np.asarray(occ_b, dtype=np.int32).view(cistring.OIndexList)
+        )
         ci_strs = (list(set(strs_a)), list(set(strs_b)))
         ci0 = np.zeros((len(ci_strs[0]), len(ci_strs[1])))
         ci0[0, 0] = 1
@@ -203,11 +206,10 @@ class QSCI:
             return e, c
         return e[nroots - 1], c[nroots - 1]
 
-
     def make_rdm(self):
         """
         Get density matrices from the selected CI wavefunction
-                
+
         Returns:
             tuple[np.ndarray, np.ndarray]: one-particle density matrix, two-particle density matrix
         """
