@@ -1,6 +1,6 @@
 import pennylane as qml
 import numpy as np
-
+from pennylane import numpy as qnp
 
 class UCCSD_Lattice:
     def __init__(self, int1e, int2e, norb, nelec):
@@ -44,7 +44,7 @@ class UCCSD_Lattice:
         self.dev_shot = qml.device("default.qubit", wires=self.qubits, shots=self.shots)
 
         # Define the initial values of the circuit parameters
-        self.params = np.random.rand(len(singles) + len(doubles))
+        self.params = qnp.random.rand(len(singles) + len(doubles))
 
     def optimize(self):
         """
