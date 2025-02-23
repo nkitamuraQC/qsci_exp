@@ -6,6 +6,7 @@ from pyscf import gto, scf, ao2mo
 import pennylane as qml
 from qsci.invham import InvHam
 
+au2eV = 27.2114
 
 def test_energy():
     norb = 2
@@ -29,7 +30,7 @@ def test_H2():
     norb = 2
     nelec = 2
     mol = gto.Mole()
-    mol.atom = """H 0 0 0; H 0 0 1"""
+    mol.atom = """H 0 0 0; H 0 0 1.0"""
     mol.basis = "sto-3g"
     mol.build()
     mf = scf.RHF(mol)
@@ -47,7 +48,36 @@ def test_H2():
     e1, c1 = qscicls.diagonalize_sci()
     cis = direct_spin1.FCISolver()
     e2, c2 = cis.kernel(int1e, int2e, norb, nelec)
+    print(c2.shape)
     assert abs(e1 - e2) < 1e-6
+    return
+
+
+def test_H4():
+    norb = 4
+    nelec = 4
+    mol = gto.Mole()
+    mol.atom = """H 0 0 0; H 0 0 0.5; H 0 0 1.0; H 0 0 1.5"""
+    mol.basis = "sto-3g"
+    mol.build()
+    mf = scf.RHF(mol)
+    mf.kernel()
+    hcore = mf.get_hcore()
+    int1e = np.einsum("ia,jb,ij->ab", mf.mo_coeff, mf.mo_coeff, hcore)
+    int2e = ao2mo.kernel(mol, mf.mo_coeff)
+    int2e = ao2mo.addons.restore("s1", int2e, mf.mo_coeff.shape[1])
+    print(int2e.shape)
+    uccsd = vqe.UCCSD_Lattice(int1e, int2e, norb, nelec)
+    uccsd.optimize()
+    smp = qsciclass.Sampler(uccsd)
+    qscicls = qsciclass.QSCI(smp)
+    qscicls.nchoose = 10
+    e1, c1 = qscicls.diagonalize_sci()
+    cis = direct_spin1.FCISolver()
+    e2, c2 = cis.kernel(int1e, int2e, norb, nelec)
+    print(c2.shape)
+    # chemical accuracy
+    assert abs(e1 * au2eV - e2 * au2eV) < 0.03
     return
 
 
