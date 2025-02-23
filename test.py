@@ -43,7 +43,7 @@ def test_H2():
     uccsd.optimize()
     smp = qsciclass.Sampler(uccsd)
     qscicls = qsciclass.QSCI(smp)
-    qscicls.nchoose = 4
+    qscicls.nchoose = 2
     e1, c1 = qscicls.diagonalize_sci()
     cis = direct_spin1.FCISolver()
     e2, c2 = cis.kernel(int1e, int2e, norb, nelec)
