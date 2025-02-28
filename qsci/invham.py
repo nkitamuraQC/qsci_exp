@@ -40,7 +40,7 @@ class InvHam:
         self.nz = self.weights.nz
         self.max_z = self.weights.max_z
         self.min_z = self.weights.min_z
-        self.k_param = 4
+        self.k_param = 10
         self.expH = self.exp()
         self.prepare_circuits()
 
